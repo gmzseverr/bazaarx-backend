@@ -17,5 +17,5 @@ public interface ProductService {
     List<ProductResponse> findByCategory(String category);
     List<String> findAllCategories();
     List<CategoryDTO> getAllCategoriesWithProducts();
-
+    List<ProductResponse> findRandomProducts();
 }

@@ -32,6 +32,11 @@ public class ProductController {
         ProductResponse product = productService.findById(id);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
+    @GetMapping("/random")
+    public List<ProductResponse> getRandomProducts() {
+        return productService.findRandomProducts();
+    }
+
 
     @GetMapping("/categories")
     public List<String> getAllCategories() {
@@ -52,9 +57,6 @@ public class ProductController {
         return productService.findByBrand(brandName);
     }
 
-    @GetMapping("/search")
-    public List<ProductResponse> getProductsByName(@PathVariable String name) {
-        return productService.findByName(name);
-    }
+
 
 }

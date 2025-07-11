@@ -85,6 +85,12 @@ public class ProductServiceImpl implements ProductService {
                         .build())
                 .collect(Collectors.toList());
     }
+    @Override
+    public List<ProductResponse> findRandomProducts() {
+        return productRepository.findRandomProducts().stream()
+                .map(ProductMapper::toDto)
+                .collect(Collectors.toList());
+    }
 
 
 
