@@ -2,6 +2,7 @@ package com.bazaarx.bazaarxbackend.service.user;
 
 
 
+import com.bazaarx.bazaarxbackend.dto.ProductResponse;
 import com.bazaarx.bazaarxbackend.entity.Product;
 import com.bazaarx.bazaarxbackend.entity.user.ApplicationUser;
 import java.util.List;
@@ -13,5 +14,6 @@ public interface UserService {
    boolean toggleFavoriteProduct(String userId, String productId);
     boolean isProductFavoriteForUser(String userId, String productId);
     List<Product> getUserFavoriteProducts(String userId);
+    List<ProductResponse> getUserFavoriteProductResponses(String userId);
 
 }

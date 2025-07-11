@@ -1,6 +1,8 @@
 package com.bazaarx.bazaarxbackend.controller;
 
 
+import com.bazaarx.bazaarxbackend.dto.ProductResponse;
+import com.bazaarx.bazaarxbackend.entity.Product;
 import com.bazaarx.bazaarxbackend.entity.user.ApplicationUser;
 
 import com.bazaarx.bazaarxbackend.mapper.ProductMapper; // Senin ProductMapper'ını import et
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
@@ -25,6 +28,16 @@ public class UserController {
     private final UserMapper userMapper;
     private final ProductMapper productMapper;
 
+
+    @GetMapping("/{userId}/favorites")
+    public ResponseEntity<List<ProductResponse>> getFavoriteProducts(@PathVariable String userId) {
+        try {
+            List<ProductResponse> favoriteDTOs = userService.getUserFavoriteProductResponses(userId);
+            return ResponseEntity.ok(favoriteDTOs);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+        }
+    }
 
 
     private String getUserIdFromAuthentication(Authentication authentication) {

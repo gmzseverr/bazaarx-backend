@@ -3,9 +3,11 @@ package com.bazaarx.bazaarxbackend.service.user;
 
 
 
+import com.bazaarx.bazaarxbackend.dto.ProductResponse;
 import com.bazaarx.bazaarxbackend.entity.Product;
 import com.bazaarx.bazaarxbackend.entity.user.ApplicationUser;
 
+import com.bazaarx.bazaarxbackend.mapper.ProductMapper;
 import com.bazaarx.bazaarxbackend.repo.ProductRepository;
 import com.bazaarx.bazaarxbackend.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service // Spring, bu sınıfı UserService arayüzünün bir uygulaması olarak bulur
 @RequiredArgsConstructor
@@ -69,5 +72,13 @@ public class UserServiceImpl implements UserService { // Arayüzü uygula
         List<String> favoriteProductIds = user.getFavorites();
         return productRepository.findAllById(favoriteProductIds);
     }
-
+    public List<ProductResponse> getUserFavoriteProductResponses(String userId) {
+        ApplicationUser user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+        List<String> favoriteProductIds = user.getFavorites();
+        return productRepository.findAllById(favoriteProductIds)
+                .stream()
+                .map(ProductMapper::toDto) // burada mapliyoruz
+                .collect(Collectors.toList());
+    }
 }
