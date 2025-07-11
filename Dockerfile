@@ -1,26 +1,20 @@
 # Build aşaması
-FROM eclipse-temurin:17-jdk-alpine as builder
+FROM maven:3.8.5-openjdk-17 AS build
 
-WORKDIR /app
+WORKDIR /usr/src
 
-# Maven ve diğer build araçlarını buraya ekle (daha büyük image kullanman gerekebilir)
-RUN apk add --no-cache maven
-
-# Kaynak kodu kopyala
 COPY . .
 
-# Build jar dosyasını oluştur
 RUN mvn clean package -DskipTests
 
-# Çalıştırma aşaması
-FROM eclipse-temurin:17-jdk-alpine
+# Runtime aşaması
+FROM openjdk:17.0.1-jdk-slim
 
 WORKDIR /app
 
 # Build aşamasından jar dosyasını kopyala
-COPY --from=builder /app/target/bazaarx-backend-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /usr/src/target/bazaarx-backend-0.0.1-SNAPSHOT.jar app.jar
+
+EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
-
-# Port aç
-EXPOSE 8080
