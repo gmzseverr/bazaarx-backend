@@ -21,3 +21,6 @@ WORKDIR /app
 COPY --from=builder /app/target/bazaarx-backend-0.0.1-SNAPSHOT.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+
+# Port aç
+EXPOSE 8080
