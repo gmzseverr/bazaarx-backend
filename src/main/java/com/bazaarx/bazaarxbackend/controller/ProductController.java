@@ -1,8 +1,7 @@
 package com.bazaarx.bazaarxbackend.controller;
 import com.bazaarx.bazaarxbackend.dto.CategoryDTO;
 import com.bazaarx.bazaarxbackend.dto.ProductResponse;
-import com.bazaarx.bazaarxbackend.entity.ProductSizeDetail;
-import com.bazaarx.bazaarxbackend.entity.StockStatus;
+
 import com.bazaarx.bazaarxbackend.service.ProductService;
 
 import org.springframework.http.HttpStatus;
@@ -15,7 +14,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/products")
 @RequiredArgsConstructor
 public class ProductController {
 

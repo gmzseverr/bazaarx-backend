@@ -8,7 +8,9 @@ import com.bazaarx.bazaarxbackend.entity.user.Role;
 import com.bazaarx.bazaarxbackend.repo.UserRepository;
 import com.bazaarx.bazaarxbackend.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,6 +31,9 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JWTService jwtService;
 
     @Transactional
     public UserResponseDTO register(String fullName, String email, String password) {
@@ -53,37 +58,50 @@ public class AuthenticationService {
     @Transactional
     public AuthResponseDTO login(String email, String password) {
         try {
+            // 1. Kimlik Doğrulama: Kullanıcı adı ve şifreyi doğrula
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
             );
 
+            // 2. Güvenlik Bağlamını Güncelle: Kimliği doğrulanmış kullanıcıyı Spring Security bağlamına ata
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
+            // 3. Kullanıcıyı Veritabanından Çek: JWT için gerekli tüm bilgileri almak üzere ApplicationUser objesini al
             ApplicationUser user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("Invalid email or password. User not found after authentication."));
+                    .orElseThrow(() -> new BadCredentialsException("User not found after successful authentication. This should not happen."));
 
-            System.out.println("DEBUG (AuthenticationService): Fetched User FullName: " + user.getFullName() +
-                    ", Email: " + user.getEmail() +
-                    ", ID: " + user.getId());
-
-            // 🔥 Rolleri doğru şekilde Set<String> olarak topladığımızdan emin olalım
+            // 4. Roller: Kullanıcının yetkilerini (rollerini) bir Set<String> olarak hazırla
             Set<String> roles = authentication.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority) // GrantedAuthority'den String rol adını al
-                    .collect(Collectors.toSet()); // Bir Set'e topla
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toSet());
 
-            System.out.println("DEBUG (AuthenticationService): User Roles: " + roles); // Rolleri konsola yazdır
+            // 5. JWT Oluştur: Kullanıcının e-postası ve rolleri ile bir JWT oluştur
+            // Not: Eğer JWT içine user.getId() de eklemek istiyorsanız, JWTService'i bu bilgiyi alacak şekilde güncelleyin.
+            // Örneğin: String token = jwtService.generateToken(user.getId(), user.getEmail(), roles);
+            String token = jwtService.generateToken(user.getEmail(), roles);
 
+            // 6. Yanıt DTO'sunu Oluştur ve Döndür: Kullanıcı ID'si dahil tüm gerekli bilgileri içeren DTO
             return new AuthResponseDTO(
-                    user.getId(),
+                    user.getId(),         // ✨ Kullanıcının gerçek MongoDB ID'si
                     user.getFullName(),
                     user.getEmail(),
-                    roles
+                    roles,
+                    token
             );
 
+        } catch (BadCredentialsException e) {
+            // Hatalı kimlik bilgileri (yanlış e-posta veya şifre) için özel hata
+            // Bu hata direkt frontend'e 401 Unauthorized olarak gidebilir.
+            throw new BadCredentialsException("Invalid email or password provided.");
+        } catch (RuntimeException e) {
+            // Kullanıcının bulunamaması gibi beklenmedik durumlar (normalde BadCredentialsException fırlatılmalıydı)
+            // Detayları logla ve daha genel bir RuntimeException fırlat
+            System.err.println("AuthenticationService login error - RuntimeException: " + e.getMessage());
+            throw new RuntimeException("An unexpected error occurred during login. Please try again later.");
         } catch (Exception e) {
-            System.err.println("AuthenticationService Login Error: " + e.getMessage());
-            e.printStackTrace();
-            throw new RuntimeException("Invalid email or password.");
+            // Diğer tüm beklenmedik hatalar
+            System.err.println("AuthenticationService login error - Generic Exception: " + e.getMessage());
+            throw new RuntimeException("An internal server error occurred during login.");
         }
     }
 }

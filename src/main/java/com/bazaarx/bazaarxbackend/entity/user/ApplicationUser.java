@@ -33,6 +33,9 @@ public class ApplicationUser implements UserDetails {
     @Field("favorites")
     private List<String> favorites = new ArrayList<>();
     private List<String> cart = new ArrayList<>();
+    private List<Address> addresses = new ArrayList<>();
+    private List<Payment> payments = new ArrayList<>();
+
 
     private boolean enabled = true;
     private boolean accountNonExpired = true;
