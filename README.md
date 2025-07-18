@@ -40,6 +40,6 @@ This backend is divided into the following main services:
 ## 🚀 Deployment
 
 The backend is deployed on **Render**.  
-Visit the live API here: [https://bazaarx-api.onrender.com](https://bazaarx-api.onrender.com)
+Visit the live API here: [https://bazaarx-backend.onrender.com](https://bazaarx-backend.onrender.com)
 
 ---
