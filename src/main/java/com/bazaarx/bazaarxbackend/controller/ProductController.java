@@ -31,7 +31,7 @@ public class ProductController {
         ProductResponse product = productService.findById(id);
         return new ResponseEntity<>(product, HttpStatus.OK);
     }
-    @GetMapping("/random")
+    @GetMapping("/")
     public List<ProductResponse> getRandomProducts() {
         return productService.findRandomProducts();
     }
